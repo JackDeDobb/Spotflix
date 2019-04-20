@@ -1,4 +1,5 @@
 import json
+import time
 from flask import Flask, request, redirect, g, render_template, Response
 import requests
 from urllib.parse import quote
@@ -95,7 +96,18 @@ def callback():
 
     # Combine profile and playlist data to display
     display_arr = [profile_data] + top_data["items"]
-    return render_template("index.html", sorted_array=display_arr)
+    return render_template("progressBar.html", sorted_array=display_arr)
+
+
+@app.route('/progress')
+def progress():
+	def generate():
+		x = 0
+		while x <= 100:
+			yield "data:" + str(x) + "\n\n"
+			x = x + 10
+			time.sleep(0.5)
+	return Response(generate(), mimetype= 'text/event-stream')
 
 
 if __name__ == "__main__":
