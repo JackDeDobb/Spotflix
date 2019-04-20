@@ -3,6 +3,7 @@ from flask import Flask, request, redirect, g, render_template
 import requests
 from urllib.parse import quote
 from credentials import *
+from songScraper import *
 
 # Authentication Steps, paramaters, and responses are defined at https://developer.spotify.com/web-api/authorization-guide/
 # Visit this url to see all the steps, parameters, and expected response.
@@ -25,7 +26,7 @@ SPOTIFY_API_URL = "{}/{}".format(SPOTIFY_API_BASE_URL, API_VERSION)
 CLIENT_SIDE_URL = "http://127.0.0.1"
 PORT = 8080
 REDIRECT_URI = "{}:{}/callback/q".format(CLIENT_SIDE_URL, PORT)
-SCOPE = "playlist-modify-public playlist-modify-private"
+SCOPE = "user-top-read user-read-recently-played"
 STATE = ""
 SHOW_DIALOG_bool = True
 SHOW_DIALOG_str = str(SHOW_DIALOG_bool).lower()
@@ -75,14 +76,25 @@ def callback():
     user_profile_api_endpoint = "{}/me".format(SPOTIFY_API_URL)
     profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
     profile_data = json.loads(profile_response.text)
+    print(profile_data)
 
-    # Get user playlist data
-    playlist_api_endpoint = "{}/playlists".format(profile_data["href"])
-    playlists_response = requests.get(playlist_api_endpoint, headers=authorization_header)
-    playlist_data = json.loads(playlists_response.text)
+    # Get top tracks data
+    recent_api_endpoint = "{}/me/player/recently-played".format(SPOTIFY_API_URL)
+    params = {'limit':30}
+    recent_response = requests.get(recent_api_endpoint, headers=authorization_header, params=params)
+    recent_data = json.loads(recent_response.text)
+    print(recent_data)
+
+    # Get most recent tracks data
+    top_api_endpoint = "{}/me/top/tracks".format(SPOTIFY_API_URL)
+    params = {'limit':30}
+    top_response = requests.get(top_api_endpoint, headers=authorization_header,params=params)
+    top_data = json.loads(top_response.text)
+    print(top_data)
+
 
     # Combine profile and playlist data to display
-    display_arr = [profile_data] + playlist_data["items"]
+    display_arr = [profile_data] + top_data["items"]
     return render_template("index.html", sorted_array=display_arr)
 
 
