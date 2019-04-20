@@ -1,6 +1,5 @@
 import json
-import time
-from flask import Flask, request, redirect, g, render_template, Response
+from flask import Flask, request, redirect, g, render_template
 import requests
 from urllib.parse import quote
 from credentials import *
@@ -77,26 +76,24 @@ def callback():
     user_profile_api_endpoint = "{}/me".format(SPOTIFY_API_URL)
     profile_response = requests.get(user_profile_api_endpoint, headers=authorization_header)
     profile_data = json.loads(profile_response.text)
-    print(profile_data)
 
     # Get top tracks data
     recent_api_endpoint = "{}/me/player/recently-played".format(SPOTIFY_API_URL)
-    params = {'limit':30}
+    params = {'limit':3}
     recent_response = requests.get(recent_api_endpoint, headers=authorization_header, params=params)
     recent_data = json.loads(recent_response.text)
-    print(recent_data)
 
     # Get most recent tracks data
     top_api_endpoint = "{}/me/top/tracks".format(SPOTIFY_API_URL)
-    params = {'limit':30}
+    params = {'limit':3}
     top_response = requests.get(top_api_endpoint, headers=authorization_header,params=params)
     top_data = json.loads(top_response.text)
-    print(top_data)
 
-
+    parse_list(top_data,recent_data)
+    
     # Combine profile and playlist data to display
     display_arr = [profile_data] + top_data["items"]
-    return render_template("progressBar.html", sorted_array=display_arr)
+    return render_template("index.html", sorted_array=display_arr)
 
 
 if __name__ == "__main__":
