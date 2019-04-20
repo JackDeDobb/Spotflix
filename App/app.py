@@ -89,10 +89,10 @@ def callback():
     top_response = requests.get(top_api_endpoint, headers=authorization_header,params=params)
     top_data = json.loads(top_response.text)
 
-    parse_list(top_data,recent_data)
-    
+    response = parse_list(top_data,recent_data)
+    print(response)
     # Combine profile and playlist data to display
-    display_arr = [profile_data] + top_data["items"]
+    display_arr = [profile_data] + response
     return render_template("index.html", sorted_array=display_arr)
 
 
