@@ -46,7 +46,9 @@ def query_lambda(lyrics_list):
     params['songs'] = lyrics_list
     response = requests.post(endpoint, auth=auth, data=json.dumps(params))
     
-    return response.text
+    # Creates a list of movie titles for now
+    response = json.loads(response.text)["body"]
+    return response
 
 # Helper function to parse API responses
 def parse_list(top,recent):
@@ -73,30 +75,4 @@ def parse_list(top,recent):
 
     response = query_lambda(lyrics_list)
 
-    print(tracks)
     return response
-
-
-
-
-
-
-
-
-
-""""
-if __name__ == "__main__":
-    os.environ["SPOTIPY_CLIENT_ID"] = sp_client_id
-    os.environ["SPOTIPY_CLIENT_SECRET"] = sp_client_secret
-    os.environ["SPOTIPY_REDIRECT_URI"] = "http://localhost:8000/callback"
-
-    token = util.prompt_for_user_token(sp_username, 'user-library-read')
-    if token == None:
-        print("Can't get token for ", sp_username)
-        exit
-    
-    #get lyrics of all songs in current user saved tracks
-    lyricsList = []
-    sp = spotipy.Spotify(auth=token)
-    results = sp.current_user_saved_tracks()['items']
-"""
