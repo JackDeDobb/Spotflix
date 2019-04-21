@@ -123,7 +123,7 @@ if __name__ == "__main__":
     script_dicts = []
     title_list = []
     meta_list = []
-    for idx, link in enumerate(total_movie_links[:40]):
+    for idx, link in enumerate(total_movie_links):
         script_dict = get_movie_script(link)
         if script_dict != None:
             print("got script dict ", idx)
