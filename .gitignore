@@ -1,5 +1,5 @@
 .DS_Store
-.cache-arnav.m.das
+.cache*
 __pycache__/
 credentials.py
 App/credentials.py
