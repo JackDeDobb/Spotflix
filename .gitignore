@@ -3,3 +3,4 @@
 __pycache__/
 credentials.py
 App/credentials.py
+dump.rdb

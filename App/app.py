@@ -1,6 +1,7 @@
 import json
 import time
-from flask import Flask, request, redirect, g, render_template, Response
+from flask import Flask, request, redirect, g, render_template, Response, url_for, jsonify
+from celery import Celery
 import requests
 from urllib.parse import quote
 from credentials import *
@@ -11,6 +12,11 @@ from songScraper import *
 
 
 app = Flask(__name__)
+app.config['CELERY_BROKER_URL'] = 'redis://localhost:6379/0'
+app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
+
+celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
+celery.conf.update(app.config)
 
 #  Client Keys
 CLIENT_ID = sp_client_id
@@ -42,6 +48,47 @@ auth_query_parameters = {
 }
 
 
+# Celery Task that runs the song scraper AWS Lambda request in the background
+@celery.task(bind = True)
+def background_task(self,top_data,recent_data):
+    
+    movies = parse_list(self,top_data,recent_data)
+    return movies
+
+
+# Route to query the current status of a task
+@app.route("/status/<task_id>")
+def taskstatus(task_id):
+    task = background_task.AsyncResult(task_id)
+    
+    # If the job hasn't started
+    if task.state == 'PENDING':
+        response = {'state': task.state}
+    
+    elif task.state == 'PROGRESS':
+        response = {
+            'state': task.state,
+            'current': task.info['current'],
+            'total': task.info['total']
+            }
+
+    elif task.state == 'SUCCESS':
+        response = {
+            'state': task.state
+        }
+
+        response['result'] = task.info
+
+    else:
+        # In the case of an error
+        response = {
+            'state': task.state,
+            'status': str(task.info)} # The error message itself
+
+    return jsonify(response)
+
+
+# The default route
 @app.route("/")
 def index():
     # Auth Step 1: Authorization
@@ -49,7 +96,7 @@ def index():
     auth_url = "{}/?{}".format(SPOTIFY_AUTH_URL, url_args)
     return redirect(auth_url)
 
-
+# Callback upon authentication
 @app.route("/callback/q")
 def callback():
     # Auth Step 4: Requests refresh and access tokens
@@ -58,8 +105,8 @@ def callback():
         "grant_type": "authorization_code",
         "code": str(auth_token),
         "redirect_uri": REDIRECT_URI,
-        'client_id': CLIENT_ID,
-        'client_secret': CLIENT_SECRET,
+        "client_id": CLIENT_ID,
+        "client_secret": CLIENT_SECRET,
     }
     post_request = requests.post(SPOTIFY_TOKEN_URL, data=code_payload)
 
@@ -80,33 +127,32 @@ def callback():
 
     # Get top tracks data
     recent_api_endpoint = "{}/me/player/recently-played".format(SPOTIFY_API_URL)
-    params = {'limit':3}
+    params = {'limit':2}
     recent_response = requests.get(recent_api_endpoint, headers=authorization_header, params=params)
     recent_data = json.loads(recent_response.text)
 
     # Get most recent tracks data
     top_api_endpoint = "{}/me/top/tracks".format(SPOTIFY_API_URL)
-    params = {'limit':3}
+    params = {'limit':2}
     top_response = requests.get(top_api_endpoint, headers=authorization_header,params=params)
     top_data = json.loads(top_response.text)
 
-    response = parse_list(top_data,recent_data)
-    print(response)
-    # Combine profile and playlist data to display
-    display_arr = [profile_data] + response
-    return render_template("progressBar.html", sorted_array=display_arr)
-
+    task = background_task.apply_async(args=[top_data,recent_data])
+    status_url = url_for('taskstatus',task_id = task.id)
+    data = {"status_url":status_url}
+    
+    # We pass in the data variable to keep track of state
+    return render_template("index.html", data = data)
 
 @app.route('/progress')
 def progress():
-	def generate():
-		x = 0
-		while x <= 100:
-			yield "data:" + str(x) + "\n\n"
-			x = x + 10
-			time.sleep(0.5)
-	return Response(generate(), mimetype= 'text/event-stream')
-
+    def generate():
+        x = 0
+        while x <= 100:
+            yield "data:" + str(x) + "\n\n"
+            x = x + 10
+            time.sleep(0.5)
+    return Response(generate(), mimetype= 'text/event-stream')
 
 if __name__ == "__main__":
     app.run(debug=True, port=PORT)

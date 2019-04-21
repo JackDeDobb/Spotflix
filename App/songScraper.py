@@ -2,13 +2,10 @@ import json
 import os
 import re
 import requests
-import sys
-import spotipy
-import spotipy.util as util
 import urllib.request
 from bs4 import BeautifulSoup
-from credentials import *
 from requests_aws4auth import AWS4Auth
+from credentials import *
 
 def get_lyrics(artist,song_title):
     
@@ -38,20 +35,20 @@ def get_lyrics(artist,song_title):
 
 
 # Send a post request to the AWS with the songlist
-def query_lambda(lyrics_list):
+def query_lambda(lyrics_list,task,total):
 
     endpoint = 'https://ce3xt72isc.execute-api.us-east-1.amazonaws.com/testStage/'
     auth = AWS4Auth(aws_access_key_id, aws_secret_access_key, 'us-east-1', 'lambda')
     params = {}
     params['songs'] = lyrics_list
     response = requests.post(endpoint, auth=auth, data=json.dumps(params))
-    
+    task.update_state(state='PROGRESS',meta={'current': total, 'total': total})
     # Creates a list of movie titles for now
     response = json.loads(response.text)["body"]
     return response
 
 # Helper function to parse API responses
-def parse_list(top,recent):
+def parse_list(task,top,recent):
 
     tracks = set()
     tracks_list = []
@@ -67,12 +64,25 @@ def parse_list(top,recent):
         if track['name'] not in tracks:
             tracks.add(track['name'])
             tracks_list.append(track)
+    
+    count = 0
+    total = int(len(tracks)*1.5)
+    print("Total:")
+    print(total)
+
+    # Set the initial progress to 0 and the total to len(tracks)
+    task.update_state(state='PROGRESS',meta={'current': count, 'total':total})
 
     for track in tracks_list:
         lyrics = get_lyrics(track['artists'][0]['name'], track['name'])
+        count += 1
+        
+        # Increment the progress by 1
+        task.update_state(state='PROGRESS',meta={'current': count, 'total': total})
+        
         if lyrics != None:
             lyrics_list.append(lyrics)
 
-    response = query_lambda(lyrics_list)
+    response = query_lambda(lyrics_list,task,total)
 
     return response
