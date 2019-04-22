@@ -127,13 +127,13 @@ def callback():
 
     # Get top tracks data
     recent_api_endpoint = "{}/me/player/recently-played".format(SPOTIFY_API_URL)
-    params = {'limit':2}
+    params = {'limit':20}
     recent_response = requests.get(recent_api_endpoint, headers=authorization_header, params=params)
     recent_data = json.loads(recent_response.text)
 
     # Get most recent tracks data
     top_api_endpoint = "{}/me/top/tracks".format(SPOTIFY_API_URL)
-    params = {'limit':2}
+    params = {'limit':20}
     top_response = requests.get(top_api_endpoint, headers=authorization_header,params=params)
     top_data = json.loads(top_response.text)
 

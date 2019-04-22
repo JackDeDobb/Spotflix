@@ -83,6 +83,7 @@ def parse_list(task,top,recent):
         if lyrics != None:
             lyrics_list.append(lyrics)
 
+    print(lyrics_list)
     response = query_lambda(lyrics_list,task,total)
 
     return response

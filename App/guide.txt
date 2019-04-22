@@ -1,0 +1,14 @@
+Steps for running the App:
+
+1) Install redis on your computer. On macOs, you can use brew to do this.
+
+2) Install celery using pip. Just check stack-overflow for a thread by someone who's already inevitably done it. If the terminal still doesn't recognize the celery command, chances are it's not part of the PATH variable (or something along those lines)
+
+(Redis and Celery are tools that work with the flask code to run background tasks that do the song scraping and lambda request server side. This is needed because Flask blocks till all the return statement unless you use something like celery, making a user wait for a good 20-25 seconds for the page to load. Redis is a "broker" that celery uses while celery is what we actually use in the code to background a task)
+
+3) Before running the app, launch both commands on separate terminal tabs (or processes):
+	a) celery -A app.celery worker --pool solo
+	b) redis-server
+ Note: This has to be done in the same directory as app.py
+
+4) Run app.py with python of course
