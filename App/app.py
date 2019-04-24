@@ -42,18 +42,14 @@ auth_query_parameters = {
     "response_type": "code",
     "redirect_uri": REDIRECT_URI,
     "scope": SCOPE,
-    # "state": STATE,
-    # "show_dialog": SHOW_DIALOG_str,
     "client_id": CLIENT_ID
 }
 
 
 # Celery Task that runs the song scraper AWS Lambda request in the background
 @celery.task(bind = True)
-def background_task(self,top_data,recent_data):
-    
-    movies = parse_list(self,top_data,recent_data)
-    return movies
+def background_task(self, top_data, recent_data):
+    return parse_list(self, top_data, recent_data)
 
 
 # Route to query the current status of a task
@@ -64,26 +60,23 @@ def taskstatus(task_id):
     # If the job hasn't started
     if task.state == 'PENDING':
         response = {'state': task.state}
-    
     elif task.state == 'PROGRESS':
         response = {
             'state': task.state,
             'current': task.info['current'],
             'total': task.info['total']
-            }
-
+        }
     elif task.state == 'SUCCESS':
         response = {
             'state': task.state
         }
-
         response['result'] = task.info
-
     else:
         # In the case of an error
         response = {
             'state': task.state,
-            'status': str(task.info)} # The error message itself
+            'status': str(task.info) # The error message itself
+        }
 
     return jsonify(response)
 
@@ -134,25 +127,23 @@ def callback():
     # Get most recent tracks data
     top_api_endpoint = "{}/me/top/tracks".format(SPOTIFY_API_URL)
     params = {'limit':20}
-    top_response = requests.get(top_api_endpoint, headers=authorization_header,params=params)
+    top_response = requests.get(top_api_endpoint, headers=authorization_header, params=params)
     top_data = json.loads(top_response.text)
 
     task = background_task.apply_async(args=[top_data,recent_data])
-    status_url = url_for('taskstatus',task_id = task.id)
-    data = {"status_url":status_url}
+    status_url = url_for('taskstatus', task_id=task.id)
+    data = {"status_url": status_url}
     
     # We pass in the data variable to keep track of state
-    return render_template("index.html", data = data)
+    return render_template("index.html", data=data)
 
 @app.route('/progress')
 def progress():
     def generate():
-        x = 0
-        while x <= 100:
-            yield "data:" + str(x) + "\n\n"
-            x = x + 10
+        for i in range(10):
+            yield "data:" + str(i * 10) + "\n\n"
             time.sleep(0.5)
-    return Response(generate(), mimetype= 'text/event-stream')
+    return Response(generate(), mimetype='text/event-stream')
 
 if __name__ == "__main__":
     app.run(debug=True, port=PORT)
