@@ -142,23 +142,15 @@ if __name__ == "__main__":
 
     #AWS S3 Magic
     s3 = boto3.resource('s3', region_name='us-east-1', aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key)
-    bucket = s3.Bucket('movie-dicts')
+    bucket_name = 'movie-dicts'
+    bucket = s3.Bucket(bucket_name)
     if bucket in s3.buckets.all():
         bucket.objects.all().delete()
         bucket.delete()
-    bucket = s3.create_bucket(Bucket='movie-dicts')
+    bucket = s3.create_bucket(Bucket=bucket_name)
 
-
-    obj = s3.Object('movie-dicts','movieList.json')
-    obj.put(Body=json.dumps(script_dicts))
-
-    obj = s3.Object('movie-dicts','titleList.json')
-    obj.put(Body=json.dumps(title_list))
-
-    obj = s3.Object('movie-dicts','metaList.json')
-    obj.put(Body=json.dumps(meta_list))
-
-    obj = s3.Object('movie-dicts','dfDict.json')
-    obj.put(Body=json.dumps(df_dict))
-
+    s3.Object(bucket_name, 'movieList.json').put(Body=json.dumps(script_dicts))
+    s3.Object(bucket_name, 'titleList.json').put(Body=json.dumps(title_list))
+    s3.Object(bucket_name, 'metaList.json').put(Body=json.dumps(meta_list))
+    s3.Object(bucket_name, 'dfDict.json').put(Body=json.dumps(df_dict))
     print("finished")
