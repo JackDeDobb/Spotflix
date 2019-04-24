@@ -7,7 +7,7 @@ from bs4 import BeautifulSoup
 from requests_aws4auth import AWS4Auth
 from credentials import *
 
-def get_lyrics(artist_name,song_title):
+def get_lyrics(artist_name, song_title):
     base_url = 'https://api.genius.com'
     headers = {'Authorization': 'Bearer ' + genius_token}
     search_url = base_url + '/search'
@@ -30,7 +30,7 @@ def get_lyrics(artist_name,song_title):
 
 
 # Send a post request to the AWS with the songlist
-def query_lambda(lyrics_list,task,total):
+def query_lambda(lyrics_list, task, total):
     endpoint = 'https://ce3xt72isc.execute-api.us-east-1.amazonaws.com/testStage/'
     auth = AWS4Auth(aws_access_key_id, aws_secret_access_key, 'us-east-1', 'lambda')
     response = requests.post(endpoint, auth=auth, data=json.dumps({'songs': lyrics_list}))
@@ -47,15 +47,13 @@ def parse_list(task, top, recent):
         track = track['track']
         tracks.add(((track['name'], track['artists'][0]['name'])))
     
-    total = int(len(tracks)*1.5)
-    print("Total: ", total)
+    total = int(len(tracks)*1.25)
 
     # Set the initial progress to 0 and the total to len(tracks)
-    task.update_state(state='PROGRESS', meta={'current': 0, 'total': total})
     lyrics_list = []
     for idx, track in enumerate(tracks):
+        task.update_state(state='PROGRESS', meta={'current': idx + 1, 'total': total})
         lyrics = get_lyrics(track[1], track[0])
-        task.update_state(state='PROGRESS', meta={'current': idx, 'total': total})
         if lyrics != None:
             lyrics_list.append(lyrics)
 
