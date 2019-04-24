@@ -7,31 +7,29 @@ from bs4 import BeautifulSoup
 from requests_aws4auth import AWS4Auth
 from credentials import *
 
-def get_lyrics(artist,song_title):
+def get_lyrics(artist_name,song_title):
+    base_url = 'https://api.genius.com'
+    headers = {'Authorization': 'Bearer ' + genius_token}
+    search_url = base_url + '/search'
+    data = {'q': song_title + ' ' + artist_name}
+    response = requests.get(search_url, data=data, headers=headers)
+
+    json = response.json()
+    remote_song_info = None
+
+    for hit in json['response']['hits']:
+        if artist_name.lower() in hit['result']['primary_artist']['name'].lower():
+            remote_song_info = hit
+            break
     
-    # remove all except alphanumeric characters from artist and song_title
-    artist = re.sub('[^A-Za-z0-9]+', "", artist.lower())
-    song_title = re.sub('[^A-Za-z0-9]+', "", song_title.lower())
-    
-    if artist.startswith("the"):    # remove starting 'the' from artist e.g. the who -> who
-        artist = artist[3:]
-    url = "http://azlyrics.com/lyrics/"+artist+"/"+song_title+".html"
-    
-    try:
-        content = urllib.request.urlopen(url).read()
-        soup = BeautifulSoup(content, 'html.parser')
-        lyrics = str(soup)
-        # lyrics lies between up_partition and down_partition
-        up_partition = '<!-- Usage of azlyrics.com content by any third-party lyrics provider is prohibited by our licensing agreement. Sorry about that. -->'
-        down_partition = '<!-- MxM banner -->'
-        lyrics = lyrics.split(up_partition)[1]
-        lyrics = lyrics.split(down_partition)[0]
-        lyrics = lyrics.replace('<br>','').replace('</br>','').replace('</div>','').strip()
+    if remote_song_info:
+        song_url = remote_song_info['result']['url']
+        page = requests.get(song_url)
+        html = BeautifulSoup(page.text, 'html.parser')
+        lyrics = html.find('div', class_='lyrics').get_text()
         return lyrics
 
-    except Exception as e:
-        print("Exception occurred \n" +str(e))
-        return None
+    return None
 
 
 # Send a post request to the AWS with the songlist
@@ -83,7 +81,7 @@ def parse_list(task,top,recent):
         if lyrics != None:
             lyrics_list.append(lyrics)
 
-    print(lyrics_list)
+    #print(lyrics_list)
     response = query_lambda(lyrics_list,task,total)
 
     return response
