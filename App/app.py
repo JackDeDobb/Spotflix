@@ -18,10 +18,6 @@ app.config['CELERY_RESULT_BACKEND'] = 'redis://localhost:6379/0'
 celery = Celery(app.name, broker=app.config['CELERY_BROKER_URL'])
 celery.conf.update(app.config)
 
-#  Client Keys
-CLIENT_ID = sp_client_id
-CLIENT_SECRET = sp_client_secret
-
 # Spotify URLS
 SPOTIFY_AUTH_URL = "https://accounts.spotify.com/authorize"
 SPOTIFY_TOKEN_URL = "https://accounts.spotify.com/api/token"
@@ -42,7 +38,7 @@ auth_query_parameters = {
     "response_type": "code",
     "redirect_uri": REDIRECT_URI,
     "scope": SCOPE,
-    "client_id": CLIENT_ID
+    "client_id": sp_client_id
 }
 
 
@@ -57,26 +53,18 @@ def background_task(self, top_data, recent_data):
 def taskstatus(task_id):
     task = background_task.AsyncResult(task_id)
     
+    response = {'state': task.state}
     # If the job hasn't started
     if task.state == 'PENDING':
-        response = {'state': task.state}
+        pass
     elif task.state == 'PROGRESS':
-        response = {
-            'state': task.state,
-            'current': task.info['current'],
-            'total': task.info['total']
-        }
+        response['current'] = task.info['current']
+        response['total'] = task.info['total']
     elif task.state == 'SUCCESS':
-        response = {
-            'state': task.state
-        }
         response['result'] = task.info
     else:
         # In the case of an error
-        response = {
-            'state': task.state,
-            'status': str(task.info) # The error message itself
-        }
+        response['status'] = str(task.info) # The error message itself
 
     return jsonify(response)
 
@@ -98,8 +86,8 @@ def callback():
         "grant_type": "authorization_code",
         "code": str(auth_token),
         "redirect_uri": REDIRECT_URI,
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
+        "client_id": sp_client_id,
+        "client_secret": sp_client_secret,
     }
     post_request = requests.post(SPOTIFY_TOKEN_URL, data=code_payload)
 
