@@ -37,32 +37,25 @@ def query_lambda(lyrics_list,task,total):
     task.update_state(state='PROGRESS', meta={'current': total, 'total': total})
     return json.loads(response.text)["body"]
 
+
 # Helper function to parse API responses
 def parse_list(task, top, recent):
     tracks = set()
-    tracks_list = []
     for track in top['items']:
-        if track['name'] not in tracks:
-            tracks.add(track['name'])
-            tracks_list.append(track)
-
+        tracks.add((track['name'], track['artists'][0]['name']))
     for track in recent['items']:
         track = track['track']
-        if track['name'] not in tracks:
-            tracks.add(track['name'])
-            tracks_list.append(track)
+        tracks.add(((track['name'], track['artists'][0]['name'])))
     
-    count = 0
     total = int(len(tracks)*1.5)
     print("Total: ", total)
 
     # Set the initial progress to 0 and the total to len(tracks)
-    task.update_state(state='PROGRESS',meta={'current': count, 'total': total})
+    task.update_state(state='PROGRESS', meta={'current': 0, 'total': total})
     lyrics_list = []
-    for track in tracks_list:
-        lyrics = get_lyrics(track['artists'][0]['name'], track['name'])
-        count += 1
-        task.update_state(state='PROGRESS',meta={'current': count, 'total': total})
+    for idx, track in enumerate(tracks):
+        lyrics = get_lyrics(track[1], track[0])
+        task.update_state(state='PROGRESS', meta={'current': idx, 'total': total})
         if lyrics != None:
             lyrics_list.append(lyrics)
 
