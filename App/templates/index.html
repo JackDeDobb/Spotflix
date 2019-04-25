@@ -9,15 +9,21 @@
     <script>
       function draw_table(data) {
         BASE_URL = "https://www.imsdb.com";
-        rn = 10
+        rn = 25
         cn = 5
         for (var r = 0; r < rn; r++) {
-          var x = document.getElementById('myTable').insertRow(r);
+          var x = document.getElementById('myTable').insertRow(r + 1);
           var y = x.insertCell(0);
           y.innerHTML = "<img src = " + BASE_URL + data[r][0] + ">";
+          if (r % 2 == 1) {
+              y.style.backgroundColor = "#F5F5F5";
+            }
           for (var c = 1; c < cn; c++) {
             var y = x.insertCell(c);
             y.innerHTML = data[r][c];
+            if (r % 2 == 1) {
+              y.style.backgroundColor = "#F5F5F5";
+            }
           }
         }
       }
@@ -72,7 +78,16 @@
         body {margin: 30px;} 
         </style>  
       </head><body> 
-        <table id="myTable" border="1"> 
+        <table class="search-results table table-condensed table-striped" id="myTable">
+          <thead>
+            <tr>
+              <th>Cover</th>
+              <th>Title</th>
+              <th>Genres</th>
+              <th>Release Date</th>
+              <th>Rating</th>
+            </tr>
+          </thead>
         </table>
       </body>
   </body>

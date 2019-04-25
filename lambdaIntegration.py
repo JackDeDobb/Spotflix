@@ -68,4 +68,4 @@ def calculate_movie_score(song_list, movie_list, title_list, meta_list, df_dict)
         movie_scores.append((acc, meta[2], title_list[idx][0], meta[3], meta[1], meta[0]))
     movie_scores.sort()
     
-    return [x[1:] for x in movie_scores][-10:]
+    return list(reversed([x[1:] for x in movie_scores][-25:]))
