@@ -64,7 +64,8 @@ def calculate_movie_score(song_list, movie_list, title_list, meta_list, df_dict)
             total_song_words = song_dict[1]
             song_dict = song_dict[0]
             acc += similarity(song_dict, movie_dict, df_dict, title_list[idx][1], total_song_words, total_movies)
-        movie_scores.append((acc, title_list[idx][0], meta_list[idx]))
+        meta = meta_list[idx]
+        movie_scores.append((acc, meta[2], title_list[idx][0], meta[3], meta[1], meta[0]))
     movie_scores.sort()
     
     return [x[1:] for x in movie_scores][-10:]
