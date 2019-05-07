@@ -42,15 +42,15 @@ Note: Testing this requires keys for the AWS API, the Spotify API, and the Geniu
 
 If you would like to get your own keys, the skeleton of the credentials file should be:
 
-'''
-aws_access_key_id = ""
-aws_secret_access_key = ""
 
-sp_client_id = "" 
-sp_client_secret = ""
+        aws_access_key_id = ""
+        aws_secret_access_key = ""
 
-genius_token = ""
-'''
+        sp_client_id = "" 
+        sp_client_secret = ""
+
+        genius_token = ""
+
 
 This file should be called in credentials.py and placed in the main folder of the repostory.
 
