@@ -2,17 +2,17 @@
 
 Our tool is essentially a recommendation system that will provide users with movie recommendations based on the songs that they listen to. We hope to explore the correlation between a user’s song and movie preferences, by comparing song lyrics to movie scripts. This tool is intended for anybody with an interest in both music and movies!
 
-To acquire the text data, we first retrieved the movie scripts to create a database. We did this by scraping data from IMsDB for ~1200 different movies, and stored them in an Amazon Web Services (AWS) S3 bucket. Next, we find the user's top 50 songs on Spotify (with the Spotify API) and retrieve their lyrics (with the Genius API). To rank the movies by their relevance to the songs, we use the TF-IDF ranking function.
+To acquire the text data, we first retrieved the movie scripts to create a database. We did this by scraping data from IMsDB for ~1200 different movies and stored them in an Amazon Web Services (AWS) S3 bucket. Next, we find the user's top 50 songs on Spotify (with the Spotify API) and retrieve their lyrics (with the Genius API). To rank the movies by their relevance to the songs, we use the TF-IDF ranking function. The interface is a Flask-based Web app in Python that prompts a Spotify Log-in and then presents a table of recommendations.
 
 ### Architecture of the Project:
 
-The project relies on the AWS Lambda service to generate the recommendations themselves. The application itself is built using Python and Flask. The Lambda service allowed us to create a REST API that responds to post requests containing a list of song lyrics. The movie-script database is stored on an S3 bucket but because the song lyrics list is quite dynamic, we have to parse those in real-time, server-side. The code to generate recommendations is part of a AWS Lambda function. This ensures that all computationally involved tasks are done server-side, making our project quite portable.
+The project relies on the AWS Lambda service to generate the recommendations themselves. The application itself is built using Python and Flask. The Lambda service allowed us to create a REST API that responds to post requests containing lists of song lyrics. The movie-script database is stored on an S3 bucket but because the song lyrics list is quite dynamic, we have to parse those in real-time, server-side. The code to generate recommendations is part of an AWS Lambda function. This ensures that all computationally involved tasks are done server-side, making our project quite portable.
 
 ### Description of Functions:2
 
 App/
 
-This directory contains the definitions for the actual web-interface. This is built using Flask. App.py contains the various routes and Celery integration that manage the various URLs. songScraper.py contains a set of helper methods that accept a list of song titles as input and retrieve their corresponding lyrics through the Genius API. These lyrics are then sent to the AWS Lambda function through a POST requests that then responds with the recommendations for a user.
+This directory contains the definitions for the actual web-interface. This is built using Flask. App.py contains the various routes and Celery integration that manage the various URLs. songScraper.py contains a set of helper methods that accept a list of song titles as input and retrieve their corresponding lyrics through the Genius API. These lyrics are then sent to the AWS Lambda function through a POST request that returns the recommendations for a user.
 
 lambdaIntegration.py
 
@@ -36,4 +36,4 @@ redis-server
 
 python3 app.py
 
-Navigating to the described url (this is usually part of the output) will prompt a Spotify login. Upon login, the user is directed to a simple page that displays a progress bar and once the recommendations are generated, it displays a table of recommendations that lists movie titles, genre, a cover, release-date, and rating.
+Navigating to the described url (this is usually part of the output and localhost:8080) will prompt a Spotify login. Upon login, the user is directed to a simple page that displays a progress bar and once the recommendations are generated, it displays a table of recommendations that lists movie titles, genre, a cover, release date, and rating.
