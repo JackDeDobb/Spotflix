@@ -8,7 +8,7 @@ To acquire the text data, we first retrieved the movie scripts to create a datab
 
 The project relies on the AWS Lambda service to generate the recommendations themselves. The application itself is built using Python and Flask. The Lambda service allowed us to create a REST API that responds to post requests containing lists of song lyrics. The movie-script database is stored on an S3 bucket but because the song lyrics list is quite dynamic, we have to parse those in real-time, server-side. The code to generate recommendations is part of an AWS Lambda function. This ensures that all computationally involved tasks are done server-side, making our project quite portable.
 
-### Description of Functions:2
+### Description of Functions:
 
 App/
 
@@ -37,3 +37,29 @@ redis-server
 python3 app.py
 
 Navigating to the described url (this is usually part of the output and localhost:8080) will prompt a Spotify login. Upon login, the user is directed to a simple page that displays a progress bar and once the recommendations are generated, it displays a table of recommendations that lists movie titles, genre, a cover, release date, and rating.
+
+Note: Testing this requires keys for the AWS API, the Spotify API, and the Genius API. Since it's not recommended that we store keys in code repositories, please reach out to any of us for a copy of the credentials file in case you need it to test the code.
+
+If you would like to get your own keys, the skeleton of the credentials file should be:
+
+'''
+aws_access_key_id = ""
+aws_secret_access_key = ""
+
+sp_client_id = "" 
+sp_client_secret = ""
+
+genius_token = ""
+'''
+
+This file should be called in credentials.py and placed in the main folder of the repostory.
+
+
+
+Submitted by:
+
+Jackson Dedobbelaere
+Arnav Das
+Surabhi Sonali
+Rachel Li
+Rohan Baskar Prabhakar
