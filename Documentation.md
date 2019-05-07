@@ -58,8 +58,8 @@ This file should be called in credentials.py and placed in the main folder of th
 
 Submitted by:
 
-Jackson Dedobbelaere
-Arnav Das
-Surabhi Sonali
-Rachel Li
+Jackson Dedobbelaere,
+Arnav Das,
+Surabhi Sonali,
+Rachel Li,
 Rohan Baskar Prabhakar
