@@ -8,19 +8,19 @@ To acquire the text data, we first retrieved the movie scripts to create a datab
 
 The project relies on the AWS Lambda service to generate the recommendations themselves. The application itself is built using Python and Flask. The Lambda service allowed us to create a REST API that responds to post requests containing a list of song lyrics. The movie-script database is stored on an S3 bucket but because the song lyrics list is quite dynamic, we have to parse those in real-time, server-side. The code to generate recommendations is part of a AWS Lambda function. This ensures that all computationally involved tasks are done server-side, making our project quite portable.
 
-### Description of Functions:
+### Description of Functions:2
 
 ** App/ **
 
-This directory contains
+This directory contains the definitions for the actual web-interface. This is built using Flask. App.py contains the various routes and Celery integration that manage the various URLs. songScraper.py contains a set of helper methods that accept a list of song titles as input and retrieve their corresponding lyrics through the Genius API. These lyrics are then sent to the AWS Lambda function through a POST requests that then responds with the recommendations for a user.
 
 ** lambdaIntegration.py **
 
-This file contains the definitions of the components of the AWS Lambda function. The Lambda function accepts a list of song lyrics, uses TF-IDF to compute similarities and rank movies, it then returns a list of the top-matches along with relevant metadata. The components alos communicate with the S3 bucket to import the movie-script data that we have parsed and stored. 
+This file contains the definitions of the components of the AWS Lambda function. The Lambda function accepts a list of song lyrics, uses TF-IDF to compute similarities and rank movies, it then returns a list of the top-matches along with relevant metadata. The components also communicate with the S3 bucket to import the movie-script data that we have parsed and stored. 
 
 ** movieScraper.py **
 
-
+This file contains the code we used to scrape the IMsDB database. The code uses Beautiful Soup to scrape relevant urls, retrieve scripts, and meta-data. It then uses the Boto3 library to store the data in the S3 bucket we've configured for the project.
 
 ### Usage:
 
