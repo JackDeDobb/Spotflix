@@ -10,15 +10,15 @@ The project relies on the AWS Lambda service to generate the recommendations the
 
 ### Description of Functions:2
 
-** App/ **
+App/
 
 This directory contains the definitions for the actual web-interface. This is built using Flask. App.py contains the various routes and Celery integration that manage the various URLs. songScraper.py contains a set of helper methods that accept a list of song titles as input and retrieve their corresponding lyrics through the Genius API. These lyrics are then sent to the AWS Lambda function through a POST requests that then responds with the recommendations for a user.
 
-** lambdaIntegration.py **
+lambdaIntegration.py
 
 This file contains the definitions of the components of the AWS Lambda function. The Lambda function accepts a list of song lyrics, uses TF-IDF to compute similarities and rank movies, it then returns a list of the top-matches along with relevant metadata. The components also communicate with the S3 bucket to import the movie-script data that we have parsed and stored. 
 
-** movieScraper.py **
+movieScraper.py
 
 This file contains the code we used to scrape the IMsDB database. The code uses Beautiful Soup to scrape relevant urls, retrieve scripts, and meta-data. It then uses the Boto3 library to store the data in the S3 bucket we've configured for the project.
 
